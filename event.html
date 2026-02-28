@@ -1,224 +1,168 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>YoRHa Evolution - Protocol</title>
     <style>
-        :root {
-            --yorha-bg: #c8c2b1;
-            --yorha-dark: #454138;
-            --yorha-white: #ffffff;
-            --yorha-accent: #ff5555;
+        :root { 
+            --yorha-gold: #c8a355; 
+            --yorha-ui: #dadada; 
+            --yorha-bg: #000; 
+            --yorha-red: #ff4d4d; 
         }
-
-        * { -webkit-tap-highlight-color: transparent; outline: none; user-select: none; box-sizing: border-box; }
-        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { 
-            margin: 0; padding: 0; height: 100vh; 
-            background-color: #000; 
-            font-family: 'Courier New', monospace; 
-            color: var(--yorha-white);
-            overflow: hidden; display: flex; flex-direction: column; align-items: center; 
+            background: var(--yorha-bg); color: var(--yorha-ui); 
+            font-family: 'Courier New', monospace; margin: 0; padding: 20px; 
+            display: flex; flex-direction: column; align-items: center; 
+            justify-content: space-between; height: 100vh; border: 1.5px solid #333; 
+            overflow: hidden; 
         }
 
-        /* الخلفية والجماليات */
-        .scanlines {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
-            background-size: 100% 4px; pointer-events: none; z-index: 100;
+        .event-header { 
+            width: 100%; border-bottom: 1px solid var(--yorha-ui); 
+            display: flex; justify-content: space-between; padding-bottom: 5px; font-size: 11px; 
         }
 
-        /* الهيدر العلوي */
-        .header-stats {
-            width: 100%; display: flex; justify-content: space-around; 
-            padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.05); z-index: 50;
+        .prize-container { 
+            flex: 1; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center; 
         }
-        .stat-box { font-size: 14px; letter-spacing: 2px; font-weight: bold; }
-
-        /* منطقة الضغط */
-        .main-interact { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; width: 100%; position: relative; }
-        .image-container {
-            width: 250px; height: 330px; border: 1.5px solid var(--yorha-white);
-            position: relative; background: #111; overflow: hidden;
-        }
-        .image-container img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-        #imgPress { opacity: 0; }
-        .image-container:active #imgIdle { opacity: 0; }
-        .image-container:active #imgPress { opacity: 1; }
-
-        /* الأزرار الجانبية (إعدادات وأحداث) */
-        .side-controls {
-            position: absolute; width: 100%; top: 85px; padding: 0 20px;
-            display: flex; justify-content: space-between; z-index: 60;
-        }
-        .yorha-btn-mini {
-            background: rgba(255,255,255,0.1); border: 1px solid var(--yorha-white);
-            color: white; padding: 8px 15px; font-size: 10px; cursor: pointer;
-            letter-spacing: 2px; text-transform: uppercase;
+        
+        .prize-image { 
+            width: 130px; transition: all 0.5s ease;
+            filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
         }
 
-        /* المودالات (النوافذ المنبثقة) بأسلوب الكود الذي أرفقته */
-        .modal {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9); display: none; 
-            justify-content: center; align-items: center; z-index: 1000;
+        .complete { filter: drop-shadow(0 0 20px var(--yorha-gold)); transform: scale(1.1); }
+
+        #claimBtn { 
+            background: var(--yorha-gold); color: #000; border: none; 
+            padding: 10px 30px; font-size: 14px; font-weight: bold; 
+            cursor: pointer; display: none; text-transform: uppercase; 
+            margin-top: 15px; animation: pulse 1.5s infinite;
         }
-        .modal-content { 
-            background: #111; border: 1.5px solid var(--yorha-white); 
-            padding: 25px; width: 280px; text-align: center; 
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(200, 163, 85, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(200, 163, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(200, 163, 85, 0); }
         }
-        .modal-title { color: white; font-size: 0.9rem; letter-spacing: 3px; margin-bottom: 20px; border-bottom: 1px solid #444; padding-bottom: 10px; }
 
-        /* نافذة الأحداث 1:1 */
-        #eventModal .modal-content {
-            width: 320px; height: 320px; padding: 0; overflow: hidden; position: relative;
+        .progress-section { width: 100%; text-align: center; }
+        .progress-bar-bg { 
+            width: 100%; height: 10px; background: #111; 
+            border: 1px solid #444; margin: 10px 0; 
         }
-        #eventFrame { width: 100%; height: 100%; border: none; }
-        .close-event { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); }
-
-        /* الإعدادات */
-        .setting-row { margin: 15px 0; text-align: left; font-size: 10px; letter-spacing: 1px; }
-        input[type=range] { width: 100%; accent-color: var(--yorha-accent); }
-        .danger-btn { background: var(--yorha-accent); color: white; border: none; padding: 10px; width: 100%; margin-top: 10px; font-weight: bold; cursor: pointer; }
-        .cancel-btn { color: #888; font-size: 9px; margin-top: 15px; cursor: pointer; text-decoration: underline; }
-
-        /* شريط التنقل السفلي */
-        .nav-bar { width: 100%; height: 60px; background: #000; border-top: 1px solid var(--yorha-white); display: flex; z-index: 100; }
-        .nav-link { flex: 1; display: flex; justify-content: center; align-items: center; color: #fff; text-decoration: none; font-size: 11px; letter-spacing: 2px; border-right: 1px solid #222; }
-
-        /* أنظمة الـ VFX */
-        .heart { position: absolute; pointer-events: none; animation: float 0.8s forwards; z-index: 200; width: 30px; }
-        @keyframes float { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-100px) scale(1.5); opacity: 0; } }
+        .progress-fill { height: 100%; background: var(--yorha-ui); width: 0%; transition: width 0.6s; }
     </style>
 </head>
 <body>
 
-    <div class="scanlines"></div>
-
-    <div class="header-stats">
-        <div class="stat-box">GOLD: <span id="g-val">0</span></div>
-        <div class="stat-box">DIAMOND: <span id="d-val">0</span></div>
+    <div class="event-header">
+        <span>PROTOCOL: SILVER_5</span>
+        <span id="timer">--:--:--</span>
     </div>
 
-    <div class="side-controls">
-        <button class="yorha-btn-mini" onclick="openModal('settingsModal')">Settings</button>
-        <button class="yorha-btn-mini" onclick="openEvent()">Events</button>
+    <div class="prize-container">
+        <img src="https://i.ibb.co/kV2bJqTR/Silver-box.png" class="prize-image" id="prizeImg">
+        <button id="claimBtn" onclick="executeClaim()">CLAIM REWARD</button>
+        <div id="alreadyClaimed" style="display:none; color:#4dff88; margin-top:15px; font-size:12px;">[ REWARD SECURED ]</div>
     </div>
 
-    <div class="main-interact">
-        <div style="font-size: 11px; margin-bottom: 10px;">LVL: <span id="lvl-display">1</span></div>
-        <div class="image-container" id="target" onpointerdown="doTap(event)">
-            <img id="imgIdle" src="unit1_idle.jpg">
-            <img id="imgPress" src="unit1_press.jpg">
+    <div class="progress-section">
+        <div style="display:flex; justify-content:space-between; font-size:10px;">
+            <span>BOXES FOUND</span>
+            <span id="countTxt">0 / 5</span>
         </div>
+        <div class="progress-bar-bg"><div id="fill" class="progress-fill"></div></div>
+        <div id="status-txt" style="font-size:9px; color:#666;">MONITORING...</div>
     </div>
 
-    <div class="modal" id="settingsModal">
-        <div class="modal-content">
-            <div class="modal-title">SYSTEM SETTINGS</div>
-            <div class="setting-row">
-                MASTER VOLUME <span id="vol-txt">100%</span>
-                <input type="range" id="volRange" min="0" max="1" step="0.1" value="1" oninput="updateVol(this.value)">
-            </div>
-            <button class="danger-btn" onclick="location.href='index.html'">ABORT MISSION (EXIT)</button>
-            <p class="cancel-btn" onclick="closeModal('settingsModal')">[ BACK TO INTERFACE ]</p>
-        </div>
-    </div>
-
-    <div class="modal" id="eventModal">
-        <div class="modal-content">
-            <iframe id="eventFrame" src=""></iframe>
-            <button class="yorha-btn-mini close-event" onclick="closeEvent()">[ CLOSE ]</button>
-        </div>
-    </div>
-
-    <nav class="nav-bar">
-        <a href="Shop.html" class="nav-link">SHOP</a>
-        <a href="Career.html" class="nav-link">MINE</a>
-        <a href="Imgs.html" class="nav-link">IMGS</a>
-    </nav>
-
-    <script src="Skins.js"></script>
     <script>
-        // نظام البيانات
-        const Data = {
-            save: (s) => {
-                localStorage.setItem('yorha_gold', s.gold);
-                localStorage.setItem('yorha_diamonds', s.diamonds);
-                localStorage.setItem('yorha_lvl', s.level);
-                localStorage.setItem('tap_progress', s.taps);
-                localStorage.setItem('yorha_vol', s.volume);
-            },
-            load: () => ({
-                gold: parseInt(localStorage.getItem('yorha_gold')) || 0,
-                diamonds: parseInt(localStorage.getItem('yorha_diamonds')) || 0,
-                level: parseInt(localStorage.getItem('yorha_lvl')) || 1,
-                taps: parseInt(localStorage.getItem('tap_progress')) || 0,
-                volume: parseFloat(localStorage.getItem('yorha_vol')) || 1
-            })
-        };
+        const BOX_PRICE = 1000; 
+        const GOAL = 5;
+        const EVENT_DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالملي ثانية
 
-        const audioNodes = Array.from({length: 20}, (_, i) => new Audio(`Sexy sound ${i+1}.ogg`));
+        // --- نظام الوقت الذكي (لا يتحدث عند الدخول) ---
+        function handleTimer() {
+            let endTime = localStorage.getItem('silver_event_deadline');
 
-        function updateVol(v) {
-            const s = Data.load();
-            s.volume = v;
-            Data.save(s);
-            document.getElementById('vol-txt').innerText = Math.round(v * 100) + "%";
+            if (!endTime) {
+                // إذا كانت هذه أول مرة يدخل فيها، حدد وقت النهاية (الآن + 24 ساعة)
+                endTime = Date.now() + EVENT_DURATION;
+                localStorage.setItem('silver_event_deadline', endTime);
+            }
+
+            setInterval(() => {
+                let now = Date.now();
+                let remaining = endTime - now;
+
+                if (remaining <= 0) {
+                    document.getElementById('timer').innerText = "EXPIRED";
+                    return;
+                }
+
+                let h = Math.floor(remaining / (1000 * 60 * 60));
+                let m = Math.floor((remaining % (1000 * 60 * 60)) / (1000 * 60));
+                let s = Math.floor((remaining % (1000 * 60)) / 1000);
+                
+                document.getElementById('timer').innerText = 
+                    `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }, 1000);
         }
 
-        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-
-        function openEvent() {
-            document.getElementById('eventFrame').src = 'event.html';
-            openModal('eventModal');
-        }
-
-        function closeEvent() {
-            document.getElementById('eventFrame').src = '';
-            closeModal('eventModal');
-        }
-
-        function doTap(e) {
-            const s = Data.load();
+        // --- نظام الاستلام ومنع الغلتش ---
+        function executeClaim() {
+            if (localStorage.getItem('silver_event_claimed') === 'true') return;
             
-            // صوت
-            const audio = audioNodes[Math.floor(Math.random() * audioNodes.length)];
-            audio.volume = s.volume;
-            audio.currentTime = 0;
-            audio.play().catch(()=>{});
+            localStorage.setItem('silver_event_claimed', 'true');
+            document.getElementById('claimBtn').style.display = 'none';
+            document.getElementById('alreadyClaimed').style.display = 'block';
 
-            // VFX
-            const h = document.createElement('img');
-            h.src = "Heart.png"; h.className = 'heart';
-            h.style.left = (e.clientX - 15) + 'px';
-            h.style.top = (e.clientY - 15) + 'px';
-            document.body.appendChild(h);
-            setTimeout(() => h.remove(), 800);
-
-            // حسابات
-            s.gold += s.level;
-            s.taps++;
-            if(s.taps >= 500) { s.level++; s.taps = 0; }
-            if(s.taps % 10 === 0) s.diamonds += Math.max(1, Math.floor(s.level/10));
-
-            Data.save(s);
-            updateUI();
+            setTimeout(() => { window.location.href = 'UGold.html'; }, 300);
         }
 
-        function updateUI() {
-            const s = Data.load();
-            document.getElementById('g-val').innerText = s.gold;
-            document.getElementById('d-val').innerText = s.diamonds;
-            document.getElementById('lvl-display').innerText = s.level;
-            document.getElementById('volRange').value = s.volume;
-            document.getElementById('vol-txt').innerText = Math.round(s.volume * 100) + "%";
+        let lastGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
+
+        function sync() {
+            // التحقق من حالة الاستلام
+            if (localStorage.getItem('silver_event_claimed') === 'true') {
+                document.getElementById('claimBtn').style.display = 'none';
+                document.getElementById('alreadyClaimed').style.display = 'block';
+                document.getElementById('fill').style.width = '100%';
+                document.getElementById('countTxt').innerText = '5 / 5';
+                return;
+            }
+
+            let currentGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
+            let currentBoxes = parseInt(localStorage.getItem('opened_boxes')) || 0;
+
+            // رصد الشراء من نقص الذهب
+            if (currentGold < lastGold) {
+                let diff = lastGold - currentGold;
+                if (diff >= BOX_PRICE) {
+                    currentBoxes += Math.floor(diff / BOX_PRICE);
+                    localStorage.setItem('opened_boxes', currentBoxes);
+                }
+            }
+            lastGold = currentGold;
+
+            // تحديث العرض
+            let count = Math.min(currentBoxes, GOAL);
+            let percent = (count / GOAL) * 100;
+            document.getElementById('fill').style.width = percent + '%';
+            document.getElementById('countTxt').innerText = `${count} / 5`;
+
+            if (count >= GOAL) {
+                document.getElementById('claimBtn').style.display = 'block';
+                document.getElementById('prizeImg').classList.add('complete');
+            }
         }
 
-        window.onload = updateUI;
+        window.onload = () => {
+            handleTimer();
+            setInterval(sync, 1000);
+        };
     </script>
 </body>
 </html>
