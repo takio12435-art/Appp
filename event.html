@@ -3,157 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <style>
-        :root { 
-            /* اللون الأزرق الألماسي الصريح والقوي */
-            --yorha-dia: #00f2ff; 
-            --yorha-ui: #dadada; 
-        }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
+        :root { --yorha-dia: #00f2ff; --yorha-ui: #dadada; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body { 
-            background-image: url('https://i.ibb.co/5gR875vF/1.jpg');
-            background-size: cover; background-position: center;
-            color: var(--yorha-ui); font-family: 'Courier New', monospace; 
-            margin: 0; padding: 15px; display: flex; flex-direction: column; 
-            align-items: center; height: 320px; width: 320px; border: 1px solid #333; 
-            overflow: hidden; position: relative;
+            background: #000; color: var(--yorha-ui); 
+            font-family: 'Courier New', monospace; display: flex; 
+            flex-direction: column; align-items: center; height: 320px; 
+            width: 320px; overflow: hidden; position: relative; padding: 15px;
         }
-
-        body::before {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7); z-index: 1;
-        }
-
-        /* الخط الأبيض الماسح */
         .scan-line {
             position: absolute; top: 0; left: 0; width: 100%; height: 2px;
             background: #fff; box-shadow: 0 0 15px #fff;
             animation: scanMove 3s linear infinite; z-index: 5;
         }
         @keyframes scanMove { 0% { top: -2px; } 50% { top: 100%; } 100% { top: -2px; } }
-
-        .event-header, .prize-container, .progress-section { position: relative; z-index: 10; }
-        .event-header { width: 100%; border-bottom: 1px solid #444; display: flex; justify-content: space-between; font-size: 10px; padding-bottom: 5px; }
-
-        .prize-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
-        /* وهج خلفي أزرق يعمل طوال الوقت بقوة 100% */
-        .glow-back {
-            position: absolute; width: 110px; height: 110px; border-radius: 50%;
-            background-color: var(--yorha-dia);
-            box-shadow: 0 0 50px var(--yorha-dia);
-            filter: blur(30px); opacity: 0.8; z-index: -1; 
-            animation: pulseGlow 2s infinite alternate;
+        .event-header { width: 100%; border-bottom: 1px solid #444; display: flex; justify-content: space-between; font-size: 10px; padding-bottom: 8px; z-index: 10; }
+        
+        .prize-container { flex: 1; width: 100%; display: flex; justify-content: center; align-items: center; position: relative; z-index: 10; }
+        
+        /* توهج أزرق ألماسي ثابت 100% */
+        .glow-back { 
+            position: absolute; width: 130px; height: 130px; border-radius: 50%; 
+            background-color: var(--yorha-dia); box-shadow: 0 0 60px var(--yorha-dia); 
+            filter: blur(35px); opacity: 0.85; z-index: -1; 
         }
-        @keyframes pulseGlow {
-            from { transform: scale(1); opacity: 0.7; }
-            to { transform: scale(1.3); opacity: 1; }
-        }
-
-        .prize-image { 
-            width: 110px; z-index: 2; transition: 0.5s; 
-            filter: drop-shadow(0 0 15px var(--yorha-dia)); /* ظل أزرق دائم */
-        }
-
-        /* زر التحصيل الأبيض */
+        
+        .prize-image { width: 110px; filter: drop-shadow(0 0 15px var(--yorha-dia)); z-index: 2; }
+        
         #claimBtn { 
-            background: #fff; color: #000; border: none; padding: 10px 25px; 
+            background: #fff; color: #000; border: none; padding: 8px 20px; 
             font-size: 12px; font-weight: bold; cursor: pointer; display: none; 
-            text-transform: uppercase; margin-top: 15px; animation: whitePulse 1.5s infinite;
+            margin-top: 10px; animation: whitePulse 1.5s infinite; z-index: 20;
         }
-        @keyframes whitePulse {
-            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
-        }
-
-        .progress-bar-bg { width: 100%; height: 8px; background: #111; border: 1px solid #444; margin: 5px 0; }
-        .progress-fill { height: 100%; background: #fff; width: 0%; transition: 0.5s; box-shadow: 0 0 10px #fff; }
+        @keyframes whitePulse { 0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); } 70% { box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); } }
+        
+        .progress-section { width: 100%; z-index: 10; margin-top: auto; }
+        .progress-bar-bg { width: 100%; height: 8px; background: #111; border: 1px solid #444; margin: 6px 0; }
+        .progress-fill { height: 100%; background: #fff; width: 0%; transition: 0.3s; box-shadow: 0 0 10px #fff; }
+        #taskName { font-size: 9px; margin-bottom: 4px; color: #fff; text-align: center; }
     </style>
 </head>
 <body>
-
     <div class="scan-line"></div>
-
-    <div class="event-header">
-        <span id="protocol-id">PROTOCOL: SYNCING...</span>
-        <span id="timer">00:00:00</span>
-    </div>
-
+    <div class="event-header"><span id="protocol-id">PROTOCOL: ...</span><span id="timer">00:00:00</span></div>
+    
     <div class="prize-container">
-        <div id="glowCircle" class="glow-back"></div>
+        <div class="glow-back"></div>
         <img src="" class="prize-image" id="prizeImg">
         <button id="claimBtn">CLAIM REWARD</button>
     </div>
-
+    
     <div class="progress-section">
-        <div id="taskName" style="font-size:9px; margin-bottom:4px; letter-spacing:1px; color:#fff;">ANALYZING...</div>
+        <div id="taskName">ANALYZING DATA...</div>
         <div style="display:flex; justify-content:space-between; font-size:9px;">
-            <span>SYNC DATA</span>
+            <span>PROGRESS</span>
             <span id="countTxt">0 / 0</span>
         </div>
         <div class="progress-bar-bg"><div id="fill" class="progress-fill"></div></div>
     </div>
 
     <script>
-        // جميع المهام الآن مبرمجة لتأخذ اللون الأزرق الألماسي حتماً
         const EVENTS = [
-            { id: "GOLD_BOX_HUNT", task: "OPEN 50 GOLD BOXES", goal: 50, img: "https://i.ibb.co/LdYJHjhr/Ultra-Goldbox.png", cost: 1000, key: "ev_g_box_total" },
-            { id: "DIA_BOX_HUNT", task: "OPEN 50 DIAMOND BOXES", goal: 50, img: "https://i.ibb.co/sdDWC2NB/Ultra-Dimondbox.png", cost: 2000, key: "ev_d_box_total" },
-            { id: "GOLD_COLLECTOR", task: "COLLECT 1,000,000 GOLD", goal: 1000000, img: "https://i.ibb.co/KcnHTGrz/Diamond.png", key: "ev_gold_total" }
+            { id: "GOLD_BOX_HUNT", goal: 50, img: "https://i.ibb.co/LdYJHjhr/Ultra-Goldbox.png", cost: 1000, key: "ev_g_box" },
+            { id: "DIA_BOX_HUNT", goal: 50, img: "https://i.ibb.co/sdDWC2NB/Ultra-Dimondbox.png", cost: 2000, key: "ev_d_box" },
+            { id: "GOLD_COLLECTOR", goal: 1000000, img: "https://i.ibb.co/KcnHTGrz/Diamond.png", key: "ev_gold_total" }
         ];
 
         const dayIdx = Math.floor(Date.now() / (1000*60*60*24)) % 3;
         const ev = EVENTS[dayIdx];
 
-        window.onload = () => {
-            document.getElementById('protocol-id').innerText = `PROTOCOL: ${ev.id}`;
-            document.getElementById('taskName').innerText = ev.task;
-            document.getElementById('prizeImg').src = ev.img;
-            document.getElementById('claimBtn').onclick = () => { location.href = ev.id + ".html"; };
-            
-            updateSystem();
-            setInterval(updateSystem, 200);
-            setInterval(runTimer, 1000);
-        };
+        document.getElementById('protocol-id').innerText = "PROTOCOL: " + ev.id;
+        document.getElementById('prizeImg').src = ev.img;
 
-        let lastGoldValue = parseInt(localStorage.getItem('yorha_gold')) || 0;
+        let lastGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
 
-        function updateSystem() {
+        function checkLogic() {
             let currentGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
             let currentProgress = parseInt(localStorage.getItem(ev.key)) || 0;
 
-            if (dayIdx === 2) { 
-                if (currentGold > lastGoldValue) {
-                    currentProgress += (currentGold - lastGoldValue);
-                    localStorage.setItem(ev.key, currentProgress);
-                }
-            } else { 
-                if (currentGold < lastGoldValue) {
-                    let spent = lastGoldValue - currentGold;
-                    if (spent === ev.cost) {
-                        currentProgress += 1;
-                        localStorage.setItem(ev.key, currentProgress);
+            if (currentGold !== lastGold) {
+                if (dayIdx === 2) { // مهمة التجميع (الذهب يزيد)
+                    if (currentGold > lastGold) {
+                        currentProgress += (currentGold - lastGold);
+                    }
+                } else { // مهمة الصناديق (الذهب ينقص بمقدار التكلفة)
+                    if (lastGold > currentGold) {
+                        let spent = lastGold - currentGold;
+                        if (spent >= ev.cost) {
+                            currentProgress += Math.floor(spent / ev.cost);
+                        }
                     }
                 }
+                
+                localStorage.setItem(ev.key, currentProgress);
+                lastGold = currentGold;
             }
-            lastGoldValue = currentGold;
 
+            // تحديث الواجهة
             let per = Math.min((currentProgress / ev.goal) * 100, 100);
-            document.getElementById('fill').style.width = per + '%';
-            document.getElementById('countTxt').innerText = `${currentProgress.toLocaleString()} / ${ev.goal.toLocaleString()}`;
-
+            document.getElementById('fill').style.width = per + "%";
+            document.getElementById('countTxt').innerText = currentProgress.toLocaleString() + " / " + ev.goal.toLocaleString();
+            
             if (currentProgress >= ev.goal) {
                 document.getElementById('claimBtn').style.display = 'block';
-                document.getElementById('prizeImg').style.filter = `drop-shadow(0 0 30px var(--yorha-dia)) brightness(1.4)`;
+                document.getElementById('claimBtn').onclick = () => { window.parent.location.href = ev.id + ".html"; };
             }
         }
 
-        function runTimer() {
+        // فحص التغييرات كل نصف ثانية دون الحاجة لتعديل الكود الأب
+        setInterval(checkLogic, 500);
+
+        // عداد الوقت
+        setInterval(() => {
             let diff = new Date().setHours(24,0,0,0) - new Date();
             let h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
             document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-        }
+        }, 1000);
+
+        checkLogic();
     </script>
 </body>
 </html>
