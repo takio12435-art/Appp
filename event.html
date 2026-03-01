@@ -4,16 +4,15 @@
     <meta charset="UTF-8">
     <style>
         :root { 
-            /* اللون الأزرق الألماسي الصريح والقوي */
-            --yorha-dia: #00f2ff; 
-            --yorha-ui: #dadada; 
+            --color-gold: #ffcc00; 
+            --color-dia: #00f2ff; /* أزرق ألماسي صريح */
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
             background-image: url('https://i.ibb.co/5gR875vF/1.jpg');
             background-size: cover; background-position: center;
-            color: var(--yorha-ui); font-family: 'Courier New', monospace; 
+            color: #dadada; font-family: 'Courier New', monospace; 
             margin: 0; padding: 15px; display: flex; flex-direction: column; 
             align-items: center; height: 320px; width: 320px; border: 1px solid #333; 
             overflow: hidden; position: relative;
@@ -37,23 +36,18 @@
 
         .prize-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
-        /* وهج خلفي أزرق يعمل طوال الوقت بقوة 100% */
+        /* دائرة الضوء الخلفية - تعمل بقوة طوال الوقت */
         .glow-back {
             position: absolute; width: 110px; height: 110px; border-radius: 50%;
-            background-color: var(--yorha-dia);
-            box-shadow: 0 0 50px var(--yorha-dia);
-            filter: blur(30px); opacity: 0.8; z-index: -1; 
+            filter: blur(35px); opacity: 0.8; z-index: -1; 
             animation: pulseGlow 2s infinite alternate;
         }
         @keyframes pulseGlow {
-            from { transform: scale(1); opacity: 0.7; }
-            to { transform: scale(1.3); opacity: 1; }
+            from { transform: scale(1); opacity: 0.6; }
+            to { transform: scale(1.25); opacity: 0.9; }
         }
 
-        .prize-image { 
-            width: 110px; z-index: 2; transition: 0.5s; 
-            filter: drop-shadow(0 0 15px var(--yorha-dia)); /* ظل أزرق دائم */
-        }
+        .prize-image { width: 110px; z-index: 2; transition: 0.5s; }
 
         /* زر التحصيل الأبيض */
         #claimBtn { 
@@ -76,7 +70,7 @@
     <div class="scan-line"></div>
 
     <div class="event-header">
-        <span id="protocol-id">PROTOCOL: SYNCING...</span>
+        <span id="protocol-id">PROTOCOL: ...</span>
         <span id="timer">00:00:00</span>
     </div>
 
@@ -96,20 +90,30 @@
     </div>
 
     <script>
-        // جميع المهام الآن مبرمجة لتأخذ اللون الأزرق الألماسي حتماً
         const EVENTS = [
-            { id: "GOLD_BOX_HUNT", task: "OPEN 50 GOLD BOXES", goal: 50, img: "https://i.ibb.co/LdYJHjhr/Ultra-Goldbox.png", cost: 1000, key: "ev_g_box_total" },
-            { id: "DIA_BOX_HUNT", task: "OPEN 50 DIAMOND BOXES", goal: 50, img: "https://i.ibb.co/sdDWC2NB/Ultra-Dimondbox.png", cost: 2000, key: "ev_d_box_total" },
-            { id: "GOLD_COLLECTOR", task: "COLLECT 1,000,000 GOLD", goal: 1000000, img: "https://i.ibb.co/KcnHTGrz/Diamond.png", key: "ev_gold_total" }
+            { id: "GOLD_BOX_HUNT", task: "OPEN 50 GOLD BOXES", goal: 50, img: "https://i.ibb.co/LdYJHjhr/Ultra-Goldbox.png", cost: 1000, key: "ev_g_box_total", color: "#ffcc00" },
+            { id: "DIA_BOX_HUNT", task: "OPEN 50 DIAMOND BOXES", goal: 50, img: "https://i.ibb.co/sdDWC2NB/Ultra-Dimondbox.png", cost: 2000, key: "ev_d_box_total", color: "#00f2ff" },
+            { id: "GOLD_COLLECTOR", task: "COLLECT 1,000,000 GOLD", goal: 1000000, img: "https://i.ibb.co/KcnHTGrz/Diamond.png", key: "ev_gold_total", color: "#ffcc00" }
         ];
 
+        // تحديد اليوم
         const dayIdx = Math.floor(Date.now() / (1000*60*60*24)) % 3;
         const ev = EVENTS[dayIdx];
 
+        // تطبيق اللون الصريح فوراً عند الفتح
         window.onload = () => {
             document.getElementById('protocol-id').innerText = `PROTOCOL: ${ev.id}`;
             document.getElementById('taskName').innerText = ev.task;
             document.getElementById('prizeImg').src = ev.img;
+            
+            // تطبيق اللون على الدائرة الخلفية وعلى ظل الصورة
+            const glow = document.getElementById('glowCircle');
+            glow.style.backgroundColor = ev.color;
+            glow.style.boxShadow = `0 0 50px ${ev.color}`;
+            
+            const img = document.getElementById('prizeImg');
+            img.style.filter = `drop-shadow(0 0 15px ${ev.color})`;
+
             document.getElementById('claimBtn').onclick = () => { location.href = ev.id + ".html"; };
             
             updateSystem();
@@ -145,7 +149,8 @@
 
             if (currentProgress >= ev.goal) {
                 document.getElementById('claimBtn').style.display = 'block';
-                document.getElementById('prizeImg').style.filter = `drop-shadow(0 0 30px var(--yorha-dia)) brightness(1.4)`;
+                document.getElementById('prizeImg').style.filter = `drop-shadow(0 0 35px ${ev.color}) brightness(1.3)`;
+                document.getElementById('glowCircle').style.transform = "scale(1.5)";
             }
         }
 
