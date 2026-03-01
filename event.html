@@ -4,159 +4,156 @@
     <meta charset="UTF-8">
     <style>
         :root { 
-            --yorha-gold: #c8a355; 
+            /* اللون الأزرق الألماسي الصريح والقوي */
+            --yorha-dia: #00f2ff; 
             --yorha-ui: #dadada; 
-            --yorha-bg: #000; 
-            --yorha-red: #ff4d4d; 
         }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            background: var(--yorha-bg); color: var(--yorha-ui); 
-            font-family: 'Courier New', monospace; margin: 0; padding: 20px; 
-            display: flex; flex-direction: column; align-items: center; 
-            justify-content: space-between; height: 100vh; border: 1.5px solid #333; 
-            overflow: hidden; 
-        }
-
-        .event-header { 
-            width: 100%; border-bottom: 1px solid var(--yorha-ui); 
-            display: flex; justify-content: space-between; padding-bottom: 5px; font-size: 11px; 
-        }
-
-        .prize-container { 
-            flex: 1; display: flex; flex-direction: column; 
-            justify-content: center; align-items: center; 
-        }
         
+        body { 
+            background-image: url('https://i.ibb.co/5gR875vF/1.jpg');
+            background-size: cover; background-position: center;
+            color: var(--yorha-ui); font-family: 'Courier New', monospace; 
+            margin: 0; padding: 15px; display: flex; flex-direction: column; 
+            align-items: center; height: 320px; width: 320px; border: 1px solid #333; 
+            overflow: hidden; position: relative;
+        }
+
+        body::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 1;
+        }
+
+        /* الخط الأبيض الماسح */
+        .scan-line {
+            position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: #fff; box-shadow: 0 0 15px #fff;
+            animation: scanMove 3s linear infinite; z-index: 5;
+        }
+        @keyframes scanMove { 0% { top: -2px; } 50% { top: 100%; } 100% { top: -2px; } }
+
+        .event-header, .prize-container, .progress-section { position: relative; z-index: 10; }
+        .event-header { width: 100%; border-bottom: 1px solid #444; display: flex; justify-content: space-between; font-size: 10px; padding-bottom: 5px; }
+
+        .prize-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        
+        /* وهج خلفي أزرق يعمل طوال الوقت بقوة 100% */
+        .glow-back {
+            position: absolute; width: 110px; height: 110px; border-radius: 50%;
+            background-color: var(--yorha-dia);
+            box-shadow: 0 0 50px var(--yorha-dia);
+            filter: blur(30px); opacity: 0.8; z-index: -1; 
+            animation: pulseGlow 2s infinite alternate;
+        }
+        @keyframes pulseGlow {
+            from { transform: scale(1); opacity: 0.7; }
+            to { transform: scale(1.3); opacity: 1; }
+        }
+
         .prize-image { 
-            width: 130px; transition: all 0.5s ease;
-            filter: drop-shadow(0 0 5px rgba(255,255,255,0.1));
+            width: 110px; z-index: 2; transition: 0.5s; 
+            filter: drop-shadow(0 0 15px var(--yorha-dia)); /* ظل أزرق دائم */
         }
 
-        .prize-image.complete {
-            filter: drop-shadow(0 0 20px var(--yorha-gold));
-            transform: scale(1.1);
-        }
-
+        /* زر التحصيل الأبيض */
         #claimBtn { 
-            background: var(--yorha-gold); color: #000; border: none; 
-            padding: 10px 30px; font-size: 14px; font-weight: bold; 
-            cursor: pointer; display: none; text-transform: uppercase; 
-            margin-top: 15px; animation: pulse 1.5s infinite;
+            background: #fff; color: #000; border: none; padding: 10px 25px; 
+            font-size: 12px; font-weight: bold; cursor: pointer; display: none; 
+            text-transform: uppercase; margin-top: 15px; animation: whitePulse 1.5s infinite;
+        }
+        @keyframes whitePulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.9); }
+            70% { box-shadow: 0 0 0 15px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
         }
 
-        @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(200, 163, 85, 0.7); }
-            70% { box-shadow: 0 0 0 10px rgba(200, 163, 85, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(200, 163, 85, 0); }
-        }
-
-        .progress-section { width: 100%; text-align: center; }
-        .progress-bar-bg { 
-            width: 100%; height: 10px; background: #111; 
-            border: 1px solid #444; margin: 10px 0; position: relative;
-        }
-        .progress-fill { 
-            height: 100%; background: var(--yorha-ui); width: 0%; 
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-
-        #status-txt { font-size: 9px; color: #666; letter-spacing: 1px; }
+        .progress-bar-bg { width: 100%; height: 8px; background: #111; border: 1px solid #444; margin: 5px 0; }
+        .progress-fill { height: 100%; background: #fff; width: 0%; transition: 0.5s; box-shadow: 0 0 10px #fff; }
     </style>
 </head>
 <body>
 
+    <div class="scan-line"></div>
+
     <div class="event-header">
-        <span>PROTOCOL: SILVER_5</span>
-        <span id="timer">--:--:--</span>
+        <span id="protocol-id">PROTOCOL: SYNCING...</span>
+        <span id="timer">00:00:00</span>
     </div>
 
     <div class="prize-container">
-        <img src="https://i.ibb.co/kV2bJqTR/Silver-box.png" class="prize-image" id="prizeImg">
-        <button id="claimBtn" onclick="location.href='UGold.html'">CLAIMED</button>
+        <div id="glowCircle" class="glow-back"></div>
+        <img src="" class="prize-image" id="prizeImg">
+        <button id="claimBtn">CLAIM REWARD</button>
     </div>
 
     <div class="progress-section">
-        <div style="display:flex; justify-content:space-between; font-size:10px;">
-            <span>RECOVERY PROGRESS</span>
-            <span id="countTxt">0 / 5</span>
+        <div id="taskName" style="font-size:9px; margin-bottom:4px; letter-spacing:1px; color:#fff;">ANALYZING...</div>
+        <div style="display:flex; justify-content:space-between; font-size:9px;">
+            <span>SYNC DATA</span>
+            <span id="countTxt">0 / 0</span>
         </div>
-        <div class="progress-bar-bg">
-            <div id="fill" class="progress-fill"></div>
-        </div>
-        <div id="status-txt">DETECTING SHOP TRANSACTIONS...</div>
+        <div class="progress-bar-bg"><div id="fill" class="progress-fill"></div></div>
     </div>
 
     <script>
-        // --- إعدادات ثابتة ---
-        const BOX_PRICE = 1000; // السعر الذي يخصمه المتجر
-        const GOAL = 5;         // الهدف الجديد
-        const DURATION = 24 * 60 * 60 * 1000; // 24 ساعة بالملي ثانية
+        // جميع المهام الآن مبرمجة لتأخذ اللون الأزرق الألماسي حتماً
+        const EVENTS = [
+            { id: "GOLD_BOX_HUNT", task: "OPEN 50 GOLD BOXES", goal: 50, img: "https://i.ibb.co/LdYJHjhr/Ultra-Goldbox.png", cost: 1000, key: "ev_g_box_total" },
+            { id: "DIA_BOX_HUNT", task: "OPEN 50 DIAMOND BOXES", goal: 50, img: "https://i.ibb.co/sdDWC2NB/Ultra-Dimondbox.png", cost: 2000, key: "ev_d_box_total" },
+            { id: "GOLD_COLLECTOR", task: "COLLECT 1,000,000 GOLD", goal: 1000000, img: "https://i.ibb.co/KcnHTGrz/Diamond.png", key: "ev_gold_total" }
+        ];
 
-        // --- إدارة الوقت ---
-        function initTimer() {
-            let startTime = localStorage.getItem('event_start_time');
-            if (!startTime) {
-                startTime = Date.now();
-                localStorage.setItem('event_start_time', startTime);
-            }
-
-            setInterval(() => {
-                let now = Date.now();
-                let elapsed = now - startTime;
-                let remaining = DURATION - elapsed;
-
-                if (remaining <= 0) {
-                    document.getElementById('timer').innerText = "EXPIRED";
-                    // اختياري: تصغير العداد هنا إذا انتهى الوقت
-                    // localStorage.removeItem('event_start_time');
-                    return;
-                }
-
-                let h = Math.floor(remaining / 3600000);
-                let m = Math.floor((remaining % 3600000) / 60000);
-                let s = Math.floor((remaining % 60000) / 1000);
-                document.getElementById('timer').innerText = 
-                    `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-            }, 1000);
-        }
-
-        // --- إدارة الرصد ---
-        let lastGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
-
-        function sync() {
-            let currentGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
-            let currentBoxes = parseInt(localStorage.getItem('opened_boxes')) || 0;
-
-            // إذا نقص الذهب فجأة (دليل على الشراء)
-            if (currentGold < lastGold) {
-                let diff = lastGold - currentGold;
-                // إذا كان النقص يقبل القسمة على سعر الصندوق
-                if (diff >= BOX_PRICE) {
-                    let bought = Math.floor(diff / BOX_PRICE);
-                    currentBoxes += bought;
-                    localStorage.setItem('opened_boxes', currentBoxes);
-                }
-            }
-            lastGold = currentGold;
-
-            // تحديث العرض
-            let percent = (currentBoxes / GOAL) * 100;
-            document.getElementById('fill').style.width = Math.min(percent, 100) + '%';
-            document.getElementById('countTxt').innerText = `${currentBoxes} / ${GOAL}`;
-
-            if (currentBoxes >= GOAL) {
-                document.getElementById('claimBtn').style.display = 'block';
-                document.getElementById('prizeImg').classList.add('complete');
-                document.getElementById('status-txt').innerText = "MISSION SUCCESSFUL. ACCESS UGold.html";
-                document.getElementById('status-txt').style.color = "var(--yorha-gold)";
-            }
-        }
+        const dayIdx = Math.floor(Date.now() / (1000*60*60*24)) % 3;
+        const ev = EVENTS[dayIdx];
 
         window.onload = () => {
-            initTimer();
-            setInterval(sync, 800); // فحص سريع كل 800 جزء من الثانية
+            document.getElementById('protocol-id').innerText = `PROTOCOL: ${ev.id}`;
+            document.getElementById('taskName').innerText = ev.task;
+            document.getElementById('prizeImg').src = ev.img;
+            document.getElementById('claimBtn').onclick = () => { location.href = ev.id + ".html"; };
+            
+            updateSystem();
+            setInterval(updateSystem, 200);
+            setInterval(runTimer, 1000);
         };
+
+        let lastGoldValue = parseInt(localStorage.getItem('yorha_gold')) || 0;
+
+        function updateSystem() {
+            let currentGold = parseInt(localStorage.getItem('yorha_gold')) || 0;
+            let currentProgress = parseInt(localStorage.getItem(ev.key)) || 0;
+
+            if (dayIdx === 2) { 
+                if (currentGold > lastGoldValue) {
+                    currentProgress += (currentGold - lastGoldValue);
+                    localStorage.setItem(ev.key, currentProgress);
+                }
+            } else { 
+                if (currentGold < lastGoldValue) {
+                    let spent = lastGoldValue - currentGold;
+                    if (spent === ev.cost) {
+                        currentProgress += 1;
+                        localStorage.setItem(ev.key, currentProgress);
+                    }
+                }
+            }
+            lastGoldValue = currentGold;
+
+            let per = Math.min((currentProgress / ev.goal) * 100, 100);
+            document.getElementById('fill').style.width = per + '%';
+            document.getElementById('countTxt').innerText = `${currentProgress.toLocaleString()} / ${ev.goal.toLocaleString()}`;
+
+            if (currentProgress >= ev.goal) {
+                document.getElementById('claimBtn').style.display = 'block';
+                document.getElementById('prizeImg').style.filter = `drop-shadow(0 0 30px var(--yorha-dia)) brightness(1.4)`;
+            }
+        }
+
+        function runTimer() {
+            let diff = new Date().setHours(24,0,0,0) - new Date();
+            let h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
+            document.getElementById('timer').innerText = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        }
     </script>
 </body>
 </html>
